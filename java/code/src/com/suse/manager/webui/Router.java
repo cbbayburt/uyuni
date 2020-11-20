@@ -32,6 +32,7 @@ import com.suse.manager.utils.SaltKeyUtils;
 import com.suse.manager.webui.controllers.ActivationKeysController;
 import com.suse.manager.webui.controllers.CVEAuditController;
 import com.suse.manager.webui.controllers.clusters.ClustersController;
+import com.suse.manager.webui.controllers.CustomDashboardController;
 import com.suse.manager.webui.controllers.DownloadController;
 import com.suse.manager.webui.controllers.FormulaCatalogController;
 import com.suse.manager.webui.controllers.FormulaController;
@@ -202,6 +203,9 @@ public class Router implements SparkApplication {
         MaintenanceController.initRoutes();
         MaintenanceScheduleController.initRoutes(jade);
         MaintenanceCalendarController.initRoutes(jade);
+
+        // Dashboard
+        CustomDashboardController.initRoutes(jade);
     }
 
     private void  initNotFoundRoutes(JadeTemplateEngine jade) {

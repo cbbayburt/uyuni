@@ -1,0 +1,25 @@
+include ../common.jade
+
+script(type='text/javascript').
+    window.csrfToken = "#{csrf_token}";
+
++userPreferences
+
+style.
+    .spacewalk-main-column-layout, #page-body, #page-body > div, #page-body-default, #spacewalk-content, html, body {
+        height: 100%;
+    }
+    #spacewalk-content {
+        padding: 0;
+    }
+    #appsmith-frame {
+        width: 100%;
+        height: 100%;
+    }
+
+block content
+    iframe#appsmith-frame(
+        src='#{appsmith_url}/applications/#{appsmith_app_id}',
+        frameborder='0'
+    )
+

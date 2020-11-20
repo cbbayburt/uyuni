@@ -1170,6 +1170,12 @@
           <context context-type="sourcefile">Traceback Email Notifications</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="My Dashboard" xml:space="preserve">
+        <source>My Dashboard</source>
+        <context-group name="ctx">
+          <context context-type="sourcefile">Navigation Menu</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="Notification Messages" xml:space="preserve">
         <source>Notification Messages</source>
         <context-group name="ctx">
