@@ -34,7 +34,7 @@ import static spark.Spark.get;
 public class CustomDashboardController {
 
     private static final String APPSMITH_URL = "https://suma-testnaica-srv.mgr.suse.de:7443";
-    private static final String APPSMITH_APP_ID = "5fb66f5496b73361c74a5471/pages/5fb66f5496b73361c74a5479";
+    private static final String APPSMITH_APP_ID = "5fb66de596b73361c74a5469/pages/5fb7a1ed24ef10354e304513";
 
     /**
      * Invoked from Router. Initialize routes for Systems Views.
