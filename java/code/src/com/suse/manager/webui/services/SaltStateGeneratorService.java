@@ -412,8 +412,13 @@ public enum SaltStateGeneratorService {
             }
         }
         catch (IOException e) {
-            LOG.error(e.getMessage(), e);
-            throw new RuntimeException(e);
+            String username = System.getProperty("user.name");
+            if (username.equalsIgnoreCase("tomcat") || username.equalsIgnoreCase("root")) {
+                LOG.error(e.getMessage(), e);
+                throw new RuntimeException(e);
+            }
+            LOG.warn(String.format("Running under special user '%s'. " +
+                    "Changing directory permissions skipped because of: %s", username, e.getMessage()), e);
         }
     }
 
