@@ -3,6 +3,32 @@ name: Changelogs
 on:
   pull_request_target:
     types: [opened, edited, synchronize, reopened, closed]
+    # Only execute on the main branches (feature branches are excluded)
+    #branches:
+    #  - master
+    # Only execute on directories that have changelogs
+    paths:
+      - 'branding/**'
+      - 'client/**'
+      - 'containers/**'
+      - 'java/**'
+      - 'projects/**'
+      - 'proxy/**'
+      - 'python/**'
+      - 'reporting/**'
+      - 'schema/**'
+      - 'search-server/**'
+      - 'selinux/**'
+      - 'spacecmd/**'
+      - 'spacewalk/**'
+      - 'susemanager/**'
+      - 'susemanager-branding-oss/**'
+      - 'susemanager-sync-data/**'
+      - 'susemanager-utils/**'
+      - 'tftpsync/**'
+      - 'utils/**'
+      - 'uyuni/**'
+      - 'web/**'
 
 jobs:
   changelog_test:
