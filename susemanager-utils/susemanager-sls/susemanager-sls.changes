@@ -1,8 +1,5 @@
 - Include automatic migration from Salt 3000 to Salt Bundle in highstate
 - fix duplicate packages in state
-- Fix enabling bundle build via custom info
-- Rename internal state 'synccustomall' to 'syncall'
-- Recurring custom states
 - Do not include pillar_only formulas in highstate
 - Allow KiwiNG to be used on SLE12 buildhosts (bsc#1204089)
 - Add kiwi supported disk images to be collectable (bsc#1208522)

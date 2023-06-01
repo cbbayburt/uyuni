@@ -1,0 +1,3 @@
+- Recurring custom states
+- Increase datetimepicker font sizes (bsc#1210437)
+- Disable login button with empty password

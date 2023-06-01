@@ -1,0 +1,23 @@
+- Fix server error in HTTP API authentication (bsc#1210394)
+- set swap memory value if available
+- set primary FQDN to hostname if none is set (bsc#1209156)
+- Do not throw on missing saltboot group
+- fix ISE when neither SCC credentials nor a local mirror is configured
+- only set self_update URL if functionality is not disabled in
+  distro or profile
+- execute highstate on registration with a user if available
+- Ensure installation of 'xalan-j2' for building.
+- Simplify Java package dependencies.
+- Safe XSLT processing in SCAP transformations
+- Fix Internal Server Error when downloading static assets (bsc#1207691)
+- Recurring custom states
+- Update Cobbler profile when a new image is deployed
+- Add mapping of image URLs for containerized proxy
+- Fix image size entries in xml-rpc
+- kernel options: only add quotes if there is a space in the value (bsc#1209926)
+- fix displaying system channels when no base product is installed
+  (bsc#1206423)
+- fix NPE in cobbler system sync when server has no creator set
+- remove channels from client after transfer to a different
+  organization (bsc#1209220)
+- Fix RHEL9 / SLL9 product discovery (bsc#1209993)

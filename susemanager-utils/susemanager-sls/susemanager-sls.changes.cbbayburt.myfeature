@@ -1,0 +1,3 @@
+- Fix enabling bundle build via custom info
+- Rename internal state 'synccustomall' to 'syncall'
+- Recurring custom states

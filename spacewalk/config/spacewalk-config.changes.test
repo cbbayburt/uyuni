@@ -1,0 +1,2 @@
+- Add /saltboot directory
+- Mark /os-images and /tftp as static content
