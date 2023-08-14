@@ -1,0 +1,33 @@
+name: External PR notifier
+
+on: workflow_dispatch
+
+jobs:
+  query_prs:
+    name: Query external PRs
+    runs-on: ubuntu-latest
+    # TODO: Set permissions
+    steps:
+      - id: list_prs
+        name: Get a list of external PRs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # TODO: -l external-contrib
+          gh pr list -s open --json number,title,author,url,isDraft -q 'map(select(.isDraft == false))' > external_prs.json
+          echo "count=`jq '. | length' external_prs.json`" >> "$GITHUB_OUTPUT"
+      - name: Compile email template
+        if: ${{ steps.list_prs.outputs.count > 0 }}
+        uses: cuchi/jinja2-action@v1.2.0
+        with:
+          template: external_prs.md.j2
+          output_file: external_prs.md
+          data_file: external_prs.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          path: external_prs.*
+      - name: Test action path
+        run: ls -lth ${{ github.action_path }}
