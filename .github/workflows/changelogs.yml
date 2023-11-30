@@ -49,7 +49,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 1
+        fetch-depth: 2
     - id: master
       name: Get modified master changelog files
       uses: Ana06/get-changed-files@v2.3.0
@@ -67,23 +67,23 @@ jobs:
         echo
         echo "See https://github.com/uyuni-project/uyuni/wiki/Contributing for a guide to writing changelogs."
         exit 1
-    - id: changelogs
-      name: Get modified files
-      if: "!contains(github.event.pull_request.body, '[x] No changelog needed')"
-      uses: Ana06/get-changed-files@v2.3.0
     - name: Test changelog entries
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         BZ_TOKEN: ${{ secrets.BUGZILLA_TOKEN }}
       run: |
         pip install python-bugzilla~=3.2.0
+
+        CHANGED_FILES=$(git diff --name-only \
+            ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
+
         # Tracker file can be retrieved from the OBS/IBS API
         # by calling 'osc api /issue_trackers/' (with authentication)
         python .github/workflows/changelogs/changelogs.py \
             --tracker-file .github/workflows/changelogs/trackers.xml \
             --git-repo uyuni-project/uyuni \
             --pr-number ${{ github.event.pull_request.number }} \
-            ${{ steps.changelogs.outputs.all }}
+            $CHANGED_FILES
 
   # Warns the user if they merged the PR, but the changelog test failed
   warn_user_if_merged:
