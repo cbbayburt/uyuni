@@ -138,6 +138,7 @@ public class Server extends BaseDomainHelper implements Identifiable {
     private boolean payg;
     private MaintenanceSchedule maintenanceSchedule;
     private Boolean hasConfigFeature;
+    private Set<ServerModule> modules = new HashSet<>();
 
     private String cpe;
 
@@ -2502,5 +2503,13 @@ public class Server extends BaseDomainHelper implements Identifiable {
      * */
     public void setCpe(String cpeIn) {
         this.cpe = cpeIn;
+    }
+
+    public Set<ServerModule> getModules() {
+        return modules;
+    }
+
+    public void setModules(Set<ServerModule> modulesIn) {
+        modules = modulesIn;
     }
 }

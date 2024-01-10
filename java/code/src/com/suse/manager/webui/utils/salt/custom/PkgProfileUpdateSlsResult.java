@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Object representation of the results of a call to state.apply
@@ -61,6 +62,9 @@ public class PkgProfileUpdateSlsResult {
 
     @SerializedName("mgrcompat_|-kernel_live_version_|-sumautil.get_kernel_live_version_|-module_run")
     private Optional<StateApplyResult<Ret<KernelLiveVersionInfo>>> kernelLiveVersionInfo = Optional.empty();
+
+    @SerializedName("mgrcompat_|-enabled_appstream_modules_|-appstreams.get_enabled_modules_|-module_run")
+    private Optional<StateApplyResult<Ret<Set<String>>>> enabledAppstreamModules = Optional.empty();
 
     @SerializedName("mgrcompat_|-grains_update_|-grains.items_|-module_run")
     private StateApplyResult<Ret<Map<String, Object>>> grains;
@@ -121,6 +125,15 @@ public class PkgProfileUpdateSlsResult {
      */
     public Optional<StateApplyResult<Ret<KernelLiveVersionInfo>>> getKernelLiveVersionInfo() {
         return kernelLiveVersionInfo;
+    }
+
+    /**
+     * Gets enabled AppStream modules on the client as a list of NSVCAs
+     *
+     * @return the list of enabled AppStream modules
+     */
+    public Optional<StateApplyResult<Ret<Set<String>>>> getEnabledAppstreamModules() {
+        return enabledAppstreamModules;
     }
 
     /**

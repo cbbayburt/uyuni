@@ -82,6 +82,7 @@ import com.redhat.rhn.domain.scc.SCCRepositoryNoAuth;
 import com.redhat.rhn.domain.scc.SCCRepositoryTokenAuth;
 import com.redhat.rhn.domain.scc.SCCSubscription;
 import com.redhat.rhn.domain.server.Pillar;
+import com.redhat.rhn.domain.server.ServerModule;
 import com.redhat.rhn.domain.server.ansible.AnsiblePath;
 import com.redhat.rhn.domain.server.ansible.InventoryPath;
 import com.redhat.rhn.domain.server.ansible.PlaybookPath;
@@ -183,7 +184,9 @@ public class AnnotationRegistry {
         ReportDBCredentials.class,
         RHUICredentials.class,
         SCCCredentials.class,
-        VHMCredentials.class
+        VHMCredentials.class,
+        com.redhat.rhn.domain.channel.Module.class,
+        ServerModule.class
     );
 
     /**

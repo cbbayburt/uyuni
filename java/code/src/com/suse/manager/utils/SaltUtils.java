@@ -48,6 +48,7 @@ import com.redhat.rhn.domain.action.virtualization.BaseVirtualizationNetworkActi
 import com.redhat.rhn.domain.action.virtualization.BaseVirtualizationPoolAction;
 import com.redhat.rhn.domain.channel.AccessTokenFactory;
 import com.redhat.rhn.domain.channel.Channel;
+import com.redhat.rhn.domain.channel.Module;
 import com.redhat.rhn.domain.config.ConfigRevision;
 import com.redhat.rhn.domain.image.ImageFile;
 import com.redhat.rhn.domain.image.ImageInfo;
@@ -74,6 +75,7 @@ import com.redhat.rhn.domain.server.InstalledProduct;
 import com.redhat.rhn.domain.server.MinionServer;
 import com.redhat.rhn.domain.server.Server;
 import com.redhat.rhn.domain.server.ServerFactory;
+import com.redhat.rhn.domain.server.ServerModule;
 import com.redhat.rhn.domain.user.User;
 import com.redhat.rhn.frontend.action.common.BadParameterException;
 import com.redhat.rhn.manager.action.ActionManager;
@@ -1493,6 +1495,21 @@ public class SaltUtils {
         server.setKernelLiveVersion(result.getKernelLiveVersionInfo()
                 .map(klv -> klv.getChanges().getRet()).filter(Objects::nonNull)
                 .map(KernelLiveVersionInfo::getKernelLiveVersion).orElse(null));
+
+        // Update AppStream modules
+        Set<ServerModule> enabledModules = result.getEnabledAppstreamModules()
+                .map(m -> m.getChanges().getRet())
+                .orElse(Collections.emptySet())
+                .stream()
+                .map(nsvca -> {
+                    ServerModule module = new ServerModule(nsvca);
+                    module.setServer(server);
+                    return module;
+                })
+                .collect(Collectors.toSet());
+
+        server.getModules().clear();
+        server.getModules().addAll(enabledModules);
 
         // Update grains
         if (!result.getGrains().isEmpty()) {

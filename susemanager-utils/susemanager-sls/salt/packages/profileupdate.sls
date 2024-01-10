@@ -59,4 +59,16 @@ kernel_live_version:
 {%- else %}
       - mgrcompat: sync_modules
 {%- endif %}
+
+{% if grains['os_family'] == 'RedHat' %}
+enabled_appstream_modules:
+  mgrcompat.module_run:
+    - name: appstreams.get_enabled_modules
+    - require:
+{%- if grains.get('__suse_reserved_saltutil_states_support', False) %}
+      - saltutil: sync_modules
+{%- else %}
+      - mgrcompat: sync_modules
+{%- endif %}
+{% endif %}
 {% endif %}
