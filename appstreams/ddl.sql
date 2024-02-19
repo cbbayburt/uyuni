@@ -84,6 +84,22 @@ LEFT JOIN suseservermodule s
     AND m.arch = s.arch
 ORDER BY c.label, m.name, m.stream, m.version, m.context, m.arch, rpn.name;
 
+CREATE OR REPLACE VIEW serverModularPackageIds AS
+SELECT
+    p.package_id,
+    c.id AS channel_id,
+    c.label AS channel_label,
+    s.server_id
+FROM susemodule m
+JOIN susemodulepackage p ON p.module_id = m.id
+JOIN rhnchannel c ON m.channel_id = c.id
+LEFT JOIN suseservermodule s
+    ON  m.name = s.name
+    AND m.stream = s.stream
+    AND m.version = s.version
+    AND m.context = s.context
+    AND m.arch = s.arch;
+
 
 
 -- MORE:
