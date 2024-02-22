@@ -18,7 +18,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "suseModule")
+@Table(name = "suseAppstream")
 public class Module {
     // TODO: Consider multi-org scenarios
     @Id
@@ -46,7 +46,7 @@ public class Module {
     private Channel channel;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "suseModulePackage",
+    @JoinTable(name = "suseAppstreamPackage",
             joinColumns = {
                     @JoinColumn(name = "module_id", nullable = false, updatable = false)},
             inverseJoinColumns = {

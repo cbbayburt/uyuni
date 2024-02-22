@@ -1,6 +1,6 @@
-# Imports module metadata to DB (suseModule)
+# Imports module metadata to DB (suseAppstream)
 # Matches "RPM artifacts" of a module to the existing package entries
-# using NEVRA comparison (suseModulePackage)
+# using NEVRA comparison (suseAppstreamPackage)
 #
 # Usage: <script> channel_id modulemd_file_path
 
@@ -49,7 +49,7 @@ if len(sys.argv) < 3:
   sys.exit(1)
 
 channel_id = sys.argv[1]
-q_insert_module = rhnSQL.prepare("""INSERT INTO suseModule
+q_insert_module = rhnSQL.prepare("""INSERT INTO suseAppstream
                       (SELECT sequence_nextval('suse_as_module_seq'), :chid, ':n', ':s', ':v', ':c', ':a')""")
 
 # Use chnanel ID as well
@@ -57,8 +57,8 @@ q_get_pkg_id = rhnSQL.prepare("""SELECT p.id from rhnPackage p WHERE p.name_id =
                         AND p.evr_id = lookup_evr(:epoch, ':version', ':release', 'rpm')
                         AND p.package_arch_id = lookup_package_arch(':parch')""")
 
-q_insert_module_package = rhnSQL.prepare("""INSERT INTO suseModulePackage VALUES (:pid,
-                       (SELECT id FROM suseModule WHERE channel_id = :chid
+q_insert_module_package = rhnSQL.prepare("""INSERT INTO suseAppstreamPackage VALUES (:pid,
+                       (SELECT id FROM suseAppstream WHERE channel_id = :chid
                         AND name = ':n' AND stream = ':s' AND version = ':v' AND context = ':c' AND arch = ':a'))""")
 
 

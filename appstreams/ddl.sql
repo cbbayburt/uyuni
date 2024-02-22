@@ -1,5 +1,5 @@
 -- List of modules in a channel
-CREATE TABLE IF NOT EXISTS suseModule(
+CREATE TABLE IF NOT EXISTS suseAppstream(
 	id	NUMERIC NOT NULL
 			CONSTRAINT suse_as_module_id_pk PRIMARY KEY,
 	channel_id NUMERIC NOT NULL
@@ -13,22 +13,23 @@ CREATE TABLE IF NOT EXISTS suseModule(
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_uq_as_module_nsvca
-ON suseModule(name, stream, version, context, arch);
+ON suseAppstream(name, stream, version, context, arch);
 
 CREATE SEQUENCE IF NOT EXISTS suse_as_module_seq;
 
 -- Which packages are included in a module
-CREATE TABLE IF NOT EXISTS suseModulePackage(
+CREATE TABLE IF NOT EXISTS suseAppstreamPackage(
 	package_id	NUMERIC NOT NULL
 				REFERENCES rhnPackage(id)
 				ON DELETE CASCADE,
 	module_id	NUMERIC NOT NULL
-				REFERENCES suseModule(id)
-				ON DELETE CASCADE
+				REFERENCES suseAppstream(id)
+				ON DELETE CASCADE,
+        CONSTRAINT uq_as_pkg_module UNIQUE (package_id, module_id)
 );
 
 -- Which modules are enabled on a server
-CREATE TABLE IF NOT EXISTS suseServerModule(
+CREATE TABLE IF NOT EXISTS suseServerAppstream(
 	id	NUMERIC NOT NULL
 			CONSTRAINT suse_as_servermodule_id_pk PRIMARY KEY,
 	server_id NUMERIC NOT NULL
@@ -47,12 +48,12 @@ CREATE OR REPLACE VIEW modulePackage AS
 SELECT
     m.name,
     m.stream,
-    m.version
+    m.version,
     pn.name as pkg_name,
-    pe.evr,
+    pe.evr
 FROM
-    suseModule m
-    JOIN suseModulePackage mp ON m.id = mp.module_id
+    suseAppstream m
+    JOIN suseAppstreamPackage mp ON m.id = mp.module_id
     JOIN rhnPackage p on mp.package_id = p.id
     JOIN rhnPackageName pn ON p.name_id = pn.id
     JOIN rhnPackageEvr pe ON p.evr_id = pe.id
@@ -70,13 +71,13 @@ SELECT
     m.arch,
     CONCAT(rpn.name, '-', COALESCE(rpe.epoch || ':', rpe.epoch), rpe.version, '-', rpe.release) AS package,
     s.server_id
-FROM susemodule m
-JOIN susemodulepackage p ON p.module_id = m.id
+FROM suseAppstream m
+JOIN suseAppstreamPackage p ON p.module_id = m.id
 JOIN rhnchannel c ON m.channel_id = c.id
 JOIN rhnpackage rp ON rp.id = p.package_id
 JOIN rhnpackageevr rpe ON rpe.id = rp.evr_id
 JOIN rhnpackagename rpn ON rpn.id = rp.name_id
-LEFT JOIN suseservermodule s
+LEFT JOIN suseServerAppstream s
     ON  m.name = s.name
     AND m.stream = s.stream
     AND m.version = s.version
@@ -90,10 +91,10 @@ SELECT
     c.id AS channel_id,
     c.label AS channel_label,
     s.server_id
-FROM susemodule m
-JOIN susemodulepackage p ON p.module_id = m.id
+FROM suseAppstream m
+JOIN suseAppstreamPackage p ON p.module_id = m.id
 JOIN rhnchannel c ON m.channel_id = c.id
-LEFT JOIN suseservermodule s
+LEFT JOIN suseServerAppstream s
     ON  m.name = s.name
     AND m.stream = s.stream
     AND m.version = s.version
