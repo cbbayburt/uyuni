@@ -28,6 +28,14 @@ CREATE TABLE IF NOT EXISTS suseAppstreamPackage(
         CONSTRAINT uq_as_pkg_module UNIQUE (package_id, module_id)
 );
 
+-- Which APIs does the module provide
+CREATE TABLE IF NOT EXISTS suseAppstreamApi(
+	module_id	NUMERIC NOT NULL
+				REFERENCES suseAppstream(id)
+				ON DELETE CASCADE,
+        rpm             VARCHAR(128) NOT NULL
+);
+
 -- Which modules are enabled on a server
 CREATE TABLE IF NOT EXISTS suseServerAppstream(
 	id	NUMERIC NOT NULL
