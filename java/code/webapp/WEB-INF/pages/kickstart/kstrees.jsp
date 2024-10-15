@@ -7,9 +7,9 @@
 <html>
 <body>
 
-<rhn:toolbar base="h1" miscIcon="item-add"
-    miscText="kickstart.kickstartable_distro_create_new.jsp"
-    miscUrl="TreeCreate.do"
+<rhn:toolbar base="h1"
+    creationUrl="TreeCreate.do"
+    creationType="distro"
     icon="header-kickstart"
     iconAlt="kickstarts.alt.img"
     helpUrl="/docs/${rhn:getDocsLocale(pageContext)}/reference/systems/autoinst-distributions.html">

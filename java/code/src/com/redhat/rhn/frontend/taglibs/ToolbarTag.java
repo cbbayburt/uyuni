@@ -18,6 +18,8 @@ import com.redhat.rhn.common.localization.LocalizationService;
 import com.redhat.rhn.frontend.html.HtmlTag;
 import com.redhat.rhn.manager.acl.AclManager;
 
+import org.apache.commons.lang3.StringUtils;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspWriter;
@@ -593,7 +595,7 @@ public class ToolbarTag extends TagSupport {
                 assertNotEmpty(getCreationUrl())) {
 
             String create = "toolbar.create." + getCreationType();
-            return renderActionLink(getCreationUrl(), create,
+            return renderActionLink(getCreationUrl(), create, "btn btn-primary",
                                     create, "item-add", null, false);
         }
         return "";
@@ -648,6 +650,11 @@ public class ToolbarTag extends TagSupport {
     private String renderActionLink(String url, String text,
                                     String alt, String iconName,
                                     String imgName, boolean isSpaOff) {
+        return renderActionLink(url, text, null, alt, iconName, imgName, isSpaOff);
+    }
+
+    private String renderActionLink(String url, String text, String className, String alt, String iconName,
+                                    String imgName, boolean isSpaOff) {
         if (url == null) {
             return "";
         }
@@ -658,6 +665,10 @@ public class ToolbarTag extends TagSupport {
         a.setAttribute("href", url);
         if (isSpaOff) {
             a.setAttribute("data-senna-off", "true");
+        }
+
+        if (StringUtils.isNotBlank(className)) {
+            a.setAttribute("class", className);
         }
 
         if (assertNotEmpty(imgName)) {
