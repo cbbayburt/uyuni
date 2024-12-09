@@ -81,6 +81,7 @@ class IssueType:
     BUG_NOT_AUTHORIZED = "Not authorized to access bug #{} in Bugzilla"
     INVALID_BUG = "Some error occurred when accessing bug #{} in Bugzilla: {}"
     INVALID_PRODUCT = "Bug #{} does not belong to SUSE Manager"
+    DUPLICATE_ENTRY = "Duplicate changelog entry"
 
 @dataclass
 class Entry:
@@ -353,7 +354,7 @@ class ChangelogValidator:
         logging.debug(f"Retrieved title and commit messages for PR#{pr_number}:\n{title_and_commits}")
         return self.extract_trackers(title_and_commits)
 
-    def validate_chlog_entry(self, entry: Entry) -> list[Issue]:
+    def validate_chlog_entry(self, entry: Entry, entries_in_file: list[Entry]) -> list[Issue]:
         """Validate a single changelog entry"""
 
         issues = []
@@ -369,6 +370,10 @@ class ChangelogValidator:
             if not any(overlaps(ver_str, match) for ver_str in re.finditer(self.regex.VERSION_REGEX, entry.entry[:match.end()])):
                 issues.append(Issue(IssueType.WRONG_SPACING, entry.file, entry.line, entry.end_line))
                 break
+
+        # Test duplication
+        if any(e.entry == entry.entry for e in entries_in_file):
+            issues.append(Issue(IssueType.DUPLICATE_ENTRY, entry.file, entry.line, entry.end_line))
 
         return issues
 
@@ -411,7 +416,7 @@ class ChangelogValidator:
                 if entry_buf:
                     # Wrap up the previous entry
                     entry = self.get_entry_obj(entry_buf, file, line_no)
-                    issues.extend(self.validate_chlog_entry(entry))
+                    issues.extend(self.validate_chlog_entry(entry, entries))
                     entries.append(entry)
                     entry_buf = [stripped_line]
                 else:
@@ -444,7 +449,7 @@ class ChangelogValidator:
         if entry_buf:
             # Validate and append the last entry
             entry = self.get_entry_obj(entry_buf, file, line_no + 1)
-            issues.extend(self.validate_chlog_entry(entry))
+            issues.extend(self.validate_chlog_entry(entry, entries))
             entries.append(entry)
 
         return (issues, entries)

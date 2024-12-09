@@ -266,6 +266,7 @@ def test_validate_chlog_file_multiple_issues_and_entries(validator, chlog_file):
     ("- This entry does not have a space:After a colon\n", IssueType.WRONG_SPACING),
     ("- Entry with version string 2.0 with.Wrong spacing.\n", IssueType.WRONG_SPACING),
     ("- This entry is" + " very" * 10 + " long\n", IssueType.LINE_TOO_LONG.format(DEFAULT_LINE_LENGTH)),
+    ("- Here's a duplicate\n- Here's a duplicate\n", IssueType.DUPLICATE_ENTRY),
 ])
 def test_validate_chlog_file_rules(validator, chlog_file, entry_text, issue_msg):
     chlog_file.write_text(entry_text)
