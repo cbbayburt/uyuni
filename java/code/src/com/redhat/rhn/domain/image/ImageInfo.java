@@ -243,7 +243,7 @@ public class ImageInfo extends BaseDomainHelper {
     /**
      * @return the installed installedProducts
      */
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "suseImageInfoInstalledProduct",
                joinColumns = { @JoinColumn(name = "image_info_id") },
                inverseJoinColumns = { @JoinColumn(name = "installed_product_id") })

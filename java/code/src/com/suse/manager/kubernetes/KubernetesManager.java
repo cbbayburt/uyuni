@@ -119,6 +119,9 @@ public class KubernetesManager {
                         if (imgDigest.startsWith(DOCKER_PULLABLE)) {
                             imgDigest = StringUtils.removeStart(container.getImageId(), DOCKER_PULLABLE);
                         }
+                        if (imgDigest.startsWith("docker.io/")) {
+                            imgDigest = StringUtils.removeStart(imgDigest, "docker.io/");
+                        }
                         ImageInfo imageInfo = digestToInfo.get(imgDigest);
                         Optional<Integer> imgBuildRevision = Optional.empty();
                         Optional<ImageUsage> usage;

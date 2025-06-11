@@ -1363,6 +1363,7 @@ public class SaltUtils {
                             imageInfo, resReleasePkg, sllReleasePkg,
                             rhelReleaseFile, centosReleaseFile, oracleReleaseFile, alibabaReleaseFile,
                             almaReleaseFile, amazonReleaseFile, rockyReleaseFile);
+                    products.forEach(ImageInfoFactory::save);
                     imageInfo.setInstalledProducts(products);
                 }
             }

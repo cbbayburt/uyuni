@@ -20,6 +20,7 @@ import com.redhat.rhn.domain.action.salt.inspect.ImageInspectAction;
 import com.redhat.rhn.domain.channel.Channel;
 import com.redhat.rhn.domain.common.ChecksumFactory;
 import com.redhat.rhn.domain.org.Org;
+import com.redhat.rhn.domain.server.InstalledProduct;
 import com.redhat.rhn.domain.server.MinionServer;
 import com.redhat.rhn.domain.server.MinionServerFactory;
 import com.redhat.rhn.domain.server.Pillar;
@@ -272,6 +273,10 @@ public class ImageInfoFactory extends HibernateFactory {
          */
     public static void save(ImageInfo imageInfo) {
         instance.saveObject(imageInfo);
+    }
+
+    public static void save(InstalledProduct product) {
+        instance.saveObject(product);
     }
 
     private static void removeImageFile(String path, SaltApi saltApi) {

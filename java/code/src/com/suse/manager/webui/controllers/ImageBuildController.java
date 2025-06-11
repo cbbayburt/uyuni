@@ -764,10 +764,12 @@ public class ImageBuildController {
             Optional<ImageOverview> imageInfo =
                     ImageInfoFactory.lookupOverviewByIdAndOrg(id, user.getOrg());
 
-            return imageInfo
-                    .map(overview -> result(res, ResultJson.success(getRuntimeDetailsJson(usages, overview)),
-                            new TypeToken<>() { }))
-                    .orElse(notFound(res, "cluster_info_not_found"));
+            if (imageInfo.isPresent()) {
+                ImageOverview overview = imageInfo.get();
+                return result(res, ResultJson.success(getRuntimeDetailsJson(usages, overview)), new TypeToken<>() { });
+            } else {
+                return notFound(res, "cluster_info_not_found");
+            }
         }
         catch (NoSuchElementException e) {
             // Cluster is not available
