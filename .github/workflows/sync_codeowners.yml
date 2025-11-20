@@ -1,0 +1,84 @@
+name: Sync CODEOWNERS to Spacewalk
+
+# This workflow is triggered when code is pushed to the master branch,
+# but only if the CODEOWNERS file or the sync script changes.
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/CODEOWNERS'
+      - '.github/scripts/sync_codeowners.sh'
+
+jobs:
+  sync:
+    strategy:
+      matrix:
+        target_branch: [Manager-5.1, Manager-5.0]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout uyuni source repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Execute substitution script
+        # Runs the script to substitute team names.
+        # Output is saved to CODEOWNERS_spacewalk_temp
+        run: sh .github/scripts/sync_codeowners.sh
+
+      - name: Commit and push to spacewalk/${{ matrix.target_branch }}
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          # Use the built-in bot user for clear audit logs in the target repository
+          username: github-actions[bot]
+
+          # The SPACEWALK_SYNC_TOKEN must be a PAT stored as a secret in the Uyuni repository
+          # with write access to the SUSE/spacewalk repository.
+          script: |
+            TARGET_ORG="SUSE"
+            TARGET_REPO="spacewalk"
+            TARGET_BRANCH="${{ matrix.target_branch }}"
+            SOURCE_FILE_NAME="CODEOWNERS_spacewalk_temp"
+            TEMP_BRANCH="sync/${TARGET_BRANCH}-codeowners-$(date +%Y%m%d%H%M%S)"
+
+            echo "Starting sync for branch: $TARGET_BRANCH"
+
+            # Clone Spacewalk Repository using the token for write access
+            git clone -b $TARGET_BRANCH https://x-access-token:${{ secrets.SPACEWALK_SYNC_TOKEN }}@github.com/$TARGET_ORG/$TARGET_REPO.git
+            cd $TARGET_REPO
+
+            git checkout -b $TEMP_BRANCH
+
+            git config user.name "GitHub Action Bot"
+            git config user.email "github-actions-bot@users.noreply.github.com"
+
+            cp ../$SOURCE_FILE_NAME .github/CODEOWNERS
+
+            if git diff --quiet .github/CODEOWNERS; then
+              echo "No changes detected in CODEOWNERS. Skipping commit."
+            else
+              echo "Changes detected. Committing and pushing to $TEMP_BRANCH..."
+              git add .github/CODEOWNERS
+              git commit -m "chore(sync): Sync CODEOWNERS from uyuni-project/uyuni"
+              git push -u origin $TEMP_BRANCH
+
+              # Store branch names for next step (create PR)
+              echo "TEMP_BRANCH=$TEMP_BRANCH" >> $GITHUB_ENV
+            fi
+
+            cd ..
+            rm -rf $TARGET_REPO
+
+      - name: Create pull request for spacewalk/${{ matrix.target_branch }}
+        if: success() && env.TEMP_BRANCH
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.SPACEWALK_SYNC_TOKEN }}
+          title: "${{ env.TARGET_BRANCH }}:CODEOWNERS Sync: Update from uyuni repository"
+          body: |
+            This pull request was automatically generated to synchronize the CODEOWNERS file
+            from the `uyuni-project/uyuni` repository to the `${{ env.TARGET_BRANCH }}` branch
+            of the `SUSE/spacewalk` repository.
+          branch: ${{ env.TMP_BRANCH }}
+          base: ${{ matrix.TARGET_BRANCH }}
