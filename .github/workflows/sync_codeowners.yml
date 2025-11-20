@@ -28,7 +28,7 @@ jobs:
         with:
           app-id: ${{ vars.CODEOWNERS_SYNC_APP_ID }}
           private-key: ${{ secrets.CODEOWNERS_SYNC_PK }}
-          repositories: SUSE/spacewalk
+          repositories: spacewalk
 
       - name: Execute substitution script
         # Runs the script to substitute team names.
