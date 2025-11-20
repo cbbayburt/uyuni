@@ -12,6 +12,9 @@ on:
 
 jobs:
   sync:
+    env:
+      TARGET_ORG: cbbayburt
+      TARGET_REPO: spacewalk
     strategy:
       matrix:
         target_branch: [Manager-5.1, Manager-5.0]
@@ -37,8 +40,6 @@ jobs:
 
       - name: Commit and push to temp branch for spacewalk/${{ matrix.target_branch }}
         run: |
-            TARGET_ORG="cbbayburt"
-            TARGET_REPO="spacewalk"
             TARGET_BRANCH="${{ matrix.target_branch }}"
             CLONE_DIR="spacewalk-checkout"
             SOURCE_FILE_NAME="CODEOWNERS_spacewalk_temp"
@@ -49,7 +50,7 @@ jobs:
             # Clone Spacewalk Repository using the token for write access
             # The IAT is short-lived and only has 'Contents' and 'Pull Requests' scopes
             TOKEN="${{ steps.generate_token.outputs.token }}"
-            git clone -b $TARGET_BRANCH https://x-access-token:$TOKEN@github.com/$TARGET_ORG/$TARGET_REPO.git $CLONE_DIR
+            git clone --depth 1 -b $TARGET_BRANCH https://x-access-token:$TOKEN@github.com/$TARGET_ORG/$TARGET_REPO.git $CLONE_DIR
             cd $CLONE_DIR
 
             git config user.name "GitHub Action Bot"
@@ -82,10 +83,11 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ steps.generate_token.outputs.token }}
-          title: "${{ env.TARGET_BRANCH }}:CODEOWNERS sync from uyuni repository"
+          title: "${{ matrix.TARGET_BRANCH }}:CODEOWNERS sync from uyuni repository"
           body: |
             This pull request was automatically generated to synchronize the CODEOWNERS file
-            from the `uyuni-project/uyuni` repository to the `${{ env.TARGET_BRANCH }}` branch
+            from the `uyuni-project/uyuni` repository to the `${{ matrix.TARGET_BRANCH }}` branch
             of the `SUSE/spacewalk` repository.
           branch: ${{ env.TEMP_BRANCH }}
           base: ${{ matrix.TARGET_BRANCH }}
+          repository: ${{ env.TARGET_ORG }}/${{ env.TARGET_REPO }}
