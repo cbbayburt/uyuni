@@ -80,14 +80,23 @@ jobs:
 
       - name: Create pull request for spacewalk/${{ matrix.target_branch }}
         if: success() && env.TEMP_BRANCH
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ steps.generate_token.outputs.token }}
-          title: "${{ matrix.TARGET_BRANCH }}:CODEOWNERS sync from uyuni repository"
-          body: |
-            This pull request was automatically generated to synchronize the CODEOWNERS file
-            from the `uyuni-project/uyuni` repository to the `${{ matrix.TARGET_BRANCH }}` branch
-            of the `SUSE/spacewalk` repository.
-          branch: ${{ env.TEMP_BRANCH }}
-          base: ${{ matrix.TARGET_BRANCH }}
-          repository: ${{ env.TARGET_ORG }}/${{ env.TARGET_REPO }}
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          TARGET_REPO="${{ env.TARGET_ORG }}/${{ env.TARGET_REPO }}"
+          PR_TITLE="${{ matrix.TARGET_BRANCH }}: CODEOWNERS sync from upstream repository"
+
+          PR_BODY=$(cat <<EOF
+This pull request was automatically generated to synchronize the CODEOWNERS file
+from the \`uyuni-project/uyuni\` repository to the \`${{ matrix.target_branch }}\` branch
+of the \`${{ env.TARGET_ORG }}/${{ env.TARGET_REPO }}\` repository.
+EOF
+)
+          echo "Creating PR on $TARGET_REPO..."
+
+          gh pr create \
+            -R $TARGET_REPO \
+            --title "$PR_TITLE" \
+            --body "$PR_BODY" \
+            --head ${{ env.TEMP_BRANCH }} \
+            --base ${{ matrix.TARGET_BRANCH }}
