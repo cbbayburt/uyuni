@@ -36,7 +36,7 @@ jobs:
           # The SPACEWALK_SYNC_TOKEN must be a PAT stored as a secret in the Uyuni repository
           # with write access to the SUSE/spacewalk repository.
           script: |
-            TARGET_ORG="SUSE"
+            TARGET_ORG="cbbayburt"
             TARGET_REPO="spacewalk"
             TARGET_BRANCH="${{ matrix.target_branch }}"
             SOURCE_FILE_NAME="CODEOWNERS_spacewalk_temp"
