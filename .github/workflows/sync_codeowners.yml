@@ -20,7 +20,7 @@ jobs:
       - name: Checkout uyuni source repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Set up SSH key for Spacewalk access
         uses: webfactory/ssh-agent@v0.9.0
@@ -33,7 +33,7 @@ jobs:
       - name: Execute substitution script
         # Runs the script to substitute team names.
         # Output is saved to CODEOWNERS_spacewalk_temp
-        run: sh .github/scripts/sync_codeowners.sh
+        run: bash .github/scripts/sync_codeowners.sh
 
       - name: Commit and push to temp branch for spacewalk/${{ matrix.target_branch }}
         run: |
