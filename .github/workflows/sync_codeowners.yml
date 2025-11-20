@@ -40,14 +40,15 @@ jobs:
             TARGET_ORG="cbbayburt"
             TARGET_REPO="spacewalk"
             TARGET_BRANCH="${{ matrix.target_branch }}"
+            CLONE_DIR = "spacewalk-checkout"
             SOURCE_FILE_NAME="CODEOWNERS_spacewalk_temp"
             TEMP_BRANCH="sync/${TARGET_BRANCH}-codeowners-$(date +%Y%m%d%H%M%S)"
 
             echo "Starting sync for branch: $TARGET_BRANCH"
 
             # Clone Spacewalk Repository using the token for write access
-            git clone -b $TARGET_BRANCH https://x-access-token:${{ secrets.SPACEWALK_SYNC_TOKEN }}@github.com/$TARGET_ORG/$TARGET_REPO.git
-            cd $TARGET_REPO
+            git clone -b $TARGET_BRANCH git@github.com/$TARGET_ORG/$TARGET_REPO.git $CLONE_DIR
+            cd $CLONE_DIR
 
             git checkout -b $TEMP_BRANCH
 
@@ -70,7 +71,7 @@ jobs:
             fi
 
             cd ..
-            rm -rf $TARGET_REPO
+            rm -rf $CLONE_DIR
 
       - name: Create pull request for spacewalk/${{ matrix.target_branch }}
         if: success() && env.TEMP_BRANCH
