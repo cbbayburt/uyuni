@@ -22,20 +22,21 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up SSH key for Spacewalk access
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SYNC_SSH_PRIVATE_KEY }}
+
+      - name: Add GitHub to known hosts
+        run: ssh-keyscan github.com >> ~/.ssh/known_hosts
+
       - name: Execute substitution script
         # Runs the script to substitute team names.
         # Output is saved to CODEOWNERS_spacewalk_temp
         run: sh .github/scripts/sync_codeowners.sh
 
-      - name: Commit and push to spacewalk/${{ matrix.target_branch }}
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          # Use the built-in bot user for clear audit logs in the target repository
-          username: github-actions[bot]
-
-          # The SPACEWALK_SYNC_TOKEN must be a PAT stored as a secret in the Uyuni repository
-          # with write access to the SUSE/spacewalk repository.
-          script: |
+      - name: Commit and push to temp branch for spacewalk/${{ matrix.target_branch }}
+        run: |
             TARGET_ORG="cbbayburt"
             TARGET_REPO="spacewalk"
             TARGET_BRANCH="${{ matrix.target_branch }}"
@@ -59,6 +60,7 @@ jobs:
               echo "No changes detected in CODEOWNERS. Skipping commit."
             else
               echo "Changes detected. Committing and pushing to $TEMP_BRANCH..."
+
               git add .github/CODEOWNERS
               git commit -m "chore(sync): Sync CODEOWNERS from uyuni-project/uyuni"
               git push -u origin $TEMP_BRANCH
@@ -80,5 +82,5 @@ jobs:
             This pull request was automatically generated to synchronize the CODEOWNERS file
             from the `uyuni-project/uyuni` repository to the `${{ env.TARGET_BRANCH }}` branch
             of the `SUSE/spacewalk` repository.
-          branch: ${{ env.TMP_BRANCH }}
+          branch: ${{ env.TEMP_BRANCH }}
           base: ${{ matrix.TARGET_BRANCH }}
