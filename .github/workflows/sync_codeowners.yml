@@ -47,7 +47,7 @@ jobs:
             echo "Starting sync for branch: $TARGET_BRANCH"
 
             # Clone Spacewalk Repository using the token for write access
-            git clone -b $TARGET_BRANCH git@github.com/$TARGET_ORG/$TARGET_REPO.git $CLONE_DIR
+            git clone -b $TARGET_BRANCH git@github.com:$TARGET_ORG/$TARGET_REPO.git $CLONE_DIR
             cd $CLONE_DIR
 
             git checkout -b $TEMP_BRANCH
