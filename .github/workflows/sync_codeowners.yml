@@ -40,7 +40,7 @@ jobs:
             TARGET_ORG="cbbayburt"
             TARGET_REPO="spacewalk"
             TARGET_BRANCH="${{ matrix.target_branch }}"
-            CLONE_DIR = "spacewalk-checkout"
+            CLONE_DIR="spacewalk-checkout"
             SOURCE_FILE_NAME="CODEOWNERS_spacewalk_temp"
             TEMP_BRANCH="sync/${TARGET_BRANCH}-codeowners-$(date +%Y%m%d%H%M%S)"
 
