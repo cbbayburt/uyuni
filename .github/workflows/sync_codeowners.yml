@@ -85,13 +85,8 @@ jobs:
         run: |
           TARGET_REPO="${{ env.TARGET_ORG }}/${{ env.TARGET_REPO }}"
           PR_TITLE="${{ matrix.TARGET_BRANCH }}: CODEOWNERS sync from upstream repository"
+          PR_BODY="This pull request was automatically generated to synchronize the CODEOWNERS file from the \`uyuni-project/uyuni\` repository to the \`${{ matrix.target_branch }}\` branch of the \`${{ env.TARGET_ORG }}/${{ env.TARGET_REPO }}\` repository."
 
-          PR_BODY=$(cat <<EOF
-This pull request was automatically generated to synchronize the CODEOWNERS file
-from the \`uyuni-project/uyuni\` repository to the \`${{ matrix.target_branch }}\` branch
-of the \`${{ env.TARGET_ORG }}/${{ env.TARGET_REPO }}\` repository.
-EOF
-)
           echo "Creating PR on $TARGET_REPO..."
 
           gh pr create \
