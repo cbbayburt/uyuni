@@ -404,7 +404,7 @@ public class ConfigDefaults {
     private static final String ERRATA_ADVISORY_MAP_CSV_DOWNLOAD_URL = "java.errata_advisory_map_csv_download_url";
 
     /**
-     * OpenID Connect authentication parameters
+     * OpenID Connect authorization parameters
      */
     public static final String OIDC_ENABLED = "web.oidc.enabled";
     public static final String OIDC_IDP_ISSUER = "web.oidc.idp.issuer";
@@ -413,8 +413,8 @@ public class ConfigDefaults {
     public static final String OIDC_JWT_USERNAME_CLAIM = "web.oidc.jwt.username_claim";
 
     /**
-     * Returns true if OIDC authentication is enabled
-     * @return true if OIDC authentication is enabled
+     * Returns true if OIDC authorization is enabled
+     * @return true if OIDC authorization is enabled
      */
     public boolean isOidcEnabled() {
         return Config.get().getBoolean(OIDC_ENABLED, false);
@@ -462,7 +462,7 @@ public class ConfigDefaults {
      * @return the name of the Uyuni username claim
      */
     public String getOidcUsernameClaim() {
-        return Config.get().getString(OIDC_JWT_USERNAME_CLAIM, "uyuni_username");
+        return Config.get().getString(OIDC_JWT_USERNAME_CLAIM, "preferred_username");
     }
 
 

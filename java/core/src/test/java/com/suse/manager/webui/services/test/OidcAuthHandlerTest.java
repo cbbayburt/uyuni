@@ -93,7 +93,7 @@ public class OidcAuthHandlerTest extends JMockBaseTestCaseWithUser {
         OidcAuthHandler handler = getHandler();
 
         Exception e = assertThrows(OidcAuthException.class, () -> handler.handleOidcLogin(token));
-        assertEquals("OIDC authentication is not enabled.", e.getMessage());
+        assertEquals("OIDC authorization is not enabled.", e.getMessage());
     }
 
     @Test

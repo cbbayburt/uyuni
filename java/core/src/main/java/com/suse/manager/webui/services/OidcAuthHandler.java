@@ -44,7 +44,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * Handles OpenID Connect (OIDC) authentication.
+ * Handles OpenID Connect (OIDC) authorization.
  */
 public class OidcAuthHandler {
 
@@ -117,7 +117,7 @@ public class OidcAuthHandler {
                 .setSkipDefaultAudienceValidation()
                 .build();
 
-        LOG.info("OIDC authentication is enabled. Issuer: {}, Audience: {}, Username attribute: {}",
+        LOG.info("OIDC authorization is enabled. Issuer: {}, Audience: {}, Username attribute: {}",
                 issuer, audience, usernameClaim);
     }
 
@@ -130,7 +130,7 @@ public class OidcAuthHandler {
         oidcEnabled = ConfigDefaults.get().isOidcEnabled();
 
         if (!oidcEnabled) {
-            LOG.debug("OIDC authentication is disabled.");
+            LOG.debug("OIDC authorization is disabled.");
             return;
         }
 
@@ -250,7 +250,7 @@ public class OidcAuthHandler {
      */
     public String handleOidcLogin(String token) throws OidcAuthException {
         if (!isOidcEnabled()) {
-            throw new OidcAuthException("OIDC authentication is not enabled.");
+            throw new OidcAuthException("OIDC authorization is not enabled.");
         }
 
         try {
@@ -270,7 +270,7 @@ public class OidcAuthHandler {
     }
 
     /**
-     * Checks if OIDC authentication is enabled by configuration.
+     * Checks if OIDC authorization is enabled by configuration.
      * @return {@code true} if OIDC is enabled, {@code false} otherwise.
      */
     public boolean isOidcEnabled() {

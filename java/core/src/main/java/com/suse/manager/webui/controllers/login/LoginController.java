@@ -226,17 +226,17 @@ public class LoginController {
     }
 
     /**
-     * Perform an OpenID connect authentication, if enabled and properly configured.
+     * Perform an OpenID connect authorization, if enabled and properly configured.
      * @param request the request object
      * @param response the response object
      * @return the JSON result of the login operation
      */
     private static String performOidcLogin(Request request, Response response) {
         if (!OIDC_AUTH_HANDLER.isOidcEnabled()) {
-            log.error("OIDC AUTH FAILURE: OpenID Connect authentication is disabled.");
+            log.error("OIDC AUTH FAILURE: OpenID Connect authorization is disabled.");
             response.status(HttpServletResponse.SC_UNAUTHORIZED);
             return SparkApplicationHelper.json(response, new LoginResult(false,
-                    "OpenID Connect authentication is disabled."), new TypeToken<>() { });
+                    "OpenID Connect authorization is disabled."), new TypeToken<>() { });
         }
 
         // Validate Authorization header
@@ -261,7 +261,7 @@ public class LoginController {
             log.error("OIDC AUTH FAILURE: Error during OIDC token handling.", e);
             response.status(HttpServletResponse.SC_UNAUTHORIZED);
             return SparkApplicationHelper.json(response, new LoginResult(false,
-                    "OpenID Connect authentication failed."), new TypeToken<>() { });
+                    "OpenID Connect authorization failed."), new TypeToken<>() { });
         }
 
         // Log in the user with username

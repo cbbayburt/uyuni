@@ -15,7 +15,7 @@
 package com.suse.manager.webui.services;
 
 /**
- * Exception for OIDC authentication failures.
+ * Exception for OIDC authorization failures.
  */
 public class OidcAuthException extends Exception {
     /**
