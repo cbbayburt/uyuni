@@ -1,14 +1,58 @@
 name: "Pull Request Labeler"
+
 on:
-- pull_request_target
+  workflow_run:
+    workflows: ["PR labeler trigger"]
+    types: [completed]
 
 jobs:
   triage:
+    # Security invariant: keep this workflow_run job metadata-only.
+    # Do not checkout or execute content from PR branches in this privileged context.
+    if: >-
+      ${{ github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.event == 'pull_request' }}
     permissions:
       contents: read
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
+    - name: Read PR number
+      id: pr
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd #v8.0.0
+      with:
+        script: |
+          const pullRequests = context.payload.workflow_run.pull_requests || [];
+          if (pullRequests.length !== 1 || !pullRequests[0].number) {
+            core.setFailed('Expected exactly one pull request in workflow_run payload.');
+            return;
+          }
+
+          const prNumber = pullRequests[0].number;
+          const { data: pullRequest } = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: prNumber,
+          });
+
+          core.setOutput('number', prNumber.toString());
+          const internalAssociations = new Set(['OWNER', 'MEMBER', 'COLLABORATOR']);
+          const isExternal = !internalAssociations.has(pullRequest.author_association);
+          core.setOutput('is_external', isExternal ? 'true' : 'false');
+
     - uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b #v6.0.1
       with:
-        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        pr-number: "${{ steps.pr.outputs.number }}"
+        configuration-path: .github/labeler.yml
+
+    - name: Label external PRs
+      if: ${{ steps.pr.outputs.is_external == 'true' }}
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd #v8.0.0
+      with:
+        script: |
+          await github.rest.issues.addLabels({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: Number('${{ steps.pr.outputs.number }}'),
+            labels: ['community'],
+          });
