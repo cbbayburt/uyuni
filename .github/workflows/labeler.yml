@@ -1,20 +1,30 @@
 name: "Pull Request Labeler"
 
+# Multi-purpose PR labeling flow.
+# This workflow consumes workflow_run events from dedicated PR producer workflows
+# and applies labels in a metadata-only privileged context.
+
 on:
   workflow_run:
-    workflows: ["PR labeler trigger"]
+    workflows: ["PR event trigger", "Check if translation is required"]
     types: [completed]
 
 jobs:
-  triage:
+  # Collects PR metadata once for PR event trigger runs.
+  # Outputs are reused by specialized labeling jobs below.
+  pr-metadata:
     # Security invariant: keep this workflow_run job metadata-only.
     # Do not checkout or execute content from PR branches in this privileged context.
     if: >-
       ${{ github.event.workflow_run.conclusion == 'success' &&
-          github.event.workflow_run.event == 'pull_request' }}
+          github.event.workflow_run.event == 'pull_request' &&
+          github.event.workflow_run.name == 'PR event trigger' }}
+    outputs:
+      pr-number: ${{ steps.pr.outputs.number }}
+      is-external: ${{ steps.pr.outputs.is_external }}
     permissions:
       contents: read
-      pull-requests: write
+      pull-requests: read
     runs-on: ubuntu-latest
     steps:
     - name: Read PR number
@@ -40,19 +50,115 @@ jobs:
           const isExternal = !internalAssociations.has(pullRequest.author_association);
           core.setOutput('is_external', isExternal ? 'true' : 'false');
 
+  # Applies path-based labels from .github/labeler.yml.
+  path-labeler:
+    # Security invariant: keep this workflow_run job metadata-only.
+    # Do not checkout or execute content from PR branches in this privileged context.
+    needs: pr-metadata
+    if: needs.pr-metadata.result == 'success'
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
     - uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b #v6.0.1
       with:
-        pr-number: "${{ steps.pr.outputs.number }}"
+        pr-number: "${{ needs.pr-metadata.outputs.pr-number }}"
         configuration-path: .github/labeler.yml
 
+  # Applies the community label to external contributors.
+  external-pr-labeler:
+    # Security invariant: keep this workflow_run job metadata-only.
+    # Do not checkout or execute content from PR branches in this privileged context.
+    needs: pr-metadata
+    if: needs.pr-metadata.result == 'success' && needs.pr-metadata.outputs.is-external == 'true'
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
     - name: Label external PRs
-      if: ${{ steps.pr.outputs.is_external == 'true' }}
       uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd #v8.0.0
       with:
         script: |
           await github.rest.issues.addLabels({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            issue_number: Number('${{ steps.pr.outputs.number }}'),
+            issue_number: Number('${{ needs.pr-metadata.outputs.pr-number }}'),
             labels: ['community'],
           });
+
+  # Applies or removes needs-translation based on translation producer result artifact.
+  translation-labeler:
+    # Security invariant: keep this workflow_run job metadata-only.
+    # Do not checkout or execute content from PR branches in this privileged context.
+    if: >-
+      ${{ github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.event == 'pull_request' &&
+          github.event.workflow_run.name == 'Check if translation is required' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Read PR number
+        id: pr
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd #v8.0.0
+        with:
+          script: |
+            const pullRequests = context.payload.workflow_run.pull_requests || [];
+            if (pullRequests.length !== 1 || !pullRequests[0].number) {
+              core.setFailed('Expected exactly one pull request in workflow_run payload.');
+              return;
+            }
+            core.setOutput('number', pullRequests[0].number.toString());
+
+      - name: Download translation result artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 #v4
+        with:
+          name: translation-check-result
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          path: .
+
+      - name: Read translation result
+        id: translation
+        run: |
+          line="$(grep -E '^needs_translation=(true|false)$' translation-result || true)"
+          if [ -z "$line" ]; then
+            echo "Invalid translation-result content; expected 'needs_translation=true' or 'needs_translation=false'." >&2
+            exit 1
+          fi
+          needs_translation="${line#needs_translation=}"
+          echo "needs_translation=${needs_translation}" >> "$GITHUB_OUTPUT"
+
+      - name: Add needs-translation label
+        if: steps.translation.outputs.needs_translation == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd #v8.0.0
+        with:
+          script: |
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: Number('${{ steps.pr.outputs.number }}'),
+              labels: ['needs-translation'],
+            });
+
+      - name: Remove needs-translation label
+        if: steps.translation.outputs.needs_translation != 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd #v8.0.0
+        with:
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: Number('${{ steps.pr.outputs.number }}'),
+                name: 'needs-translation',
+              });
+            } catch (error) {
+              if (error.status !== 404) {
+                throw error;
+              }
+            }

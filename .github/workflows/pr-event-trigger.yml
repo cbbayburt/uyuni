@@ -1,0 +1,22 @@
+name: "PR event trigger"
+
+# Generic PR lifecycle trigger.
+# This workflow intentionally does no business logic and exists so other workflows
+# can safely subscribe via `workflow_run`.
+# Keep event types aligned with consumers that rely on PR open/reopen/synchronize.
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+permissions:
+  contents: read
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "PR event trigger workflow completed"
