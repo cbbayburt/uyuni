@@ -1,0 +1,30 @@
+name: Acceptance tests feedback trigger
+
+# Trigger-only workflow for acceptance feedback comments.
+# This workflow contains no privileged logic and is consumed via workflow_run.
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - 'java/**'
+      - 'web/html/src/**'
+      - 'testsuite/**'
+      - '.github/workflows/acceptance_tests_sequential.yml'
+      - '.github/workflows/acceptance_tests_parallel.yml'
+      - '.github/workflows/acceptance_tests_feedback_comment.yml'
+      - '.github/workflows/acceptance_tests_feedback_trigger.yml'
+      - '.github/workflows/acceptance_tests_base.yml'
+      - '!java/*.changes*'
+      - '!testsuite/features/build_validation/**'
+
+permissions:
+  contents: read
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Acceptance tests feedback trigger workflow completed"

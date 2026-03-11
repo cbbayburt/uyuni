@@ -1,35 +1,46 @@
-name: Ask for acceptance tests feedback
+name: Post acceptance tests feedback comment
+
 on:
-  pull_request_target:
-    paths:
-      - 'java/**'
-      - 'web/html/src/**'
-      - 'testsuite/**'
-      - '.github/workflows/acceptance_tests_sequential.yml'
-      - '.github/workflows/acceptance_tests_parallel.yml'
-      - '.github/workflows/acceptance_tests_feedback.yml'
-      - '.github/workflows/acceptance_tests_base.yml'
-      - '!java/*.changes*'
-      - '!testsuite/features/build_validation/**'
+  workflow_run:
+    workflows: ["Acceptance tests feedback trigger"]
+    types: [completed]
+
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  group: ${{ github.workflow }}-${{ github.event.workflow_run.head_branch || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   comment:
+    if: >-
+      ${{ github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.event == 'pull_request' }}
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
     steps:
+      - name: Read PR number
+        id: pr
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd #v8.0.0
+        with:
+          script: |
+            const pullRequests = context.payload.workflow_run.pull_requests || [];
+            if (pullRequests.length !== 1 || !pullRequests[0].number) {
+              core.setFailed('Expected exactly one pull request in workflow_run payload.');
+              return;
+            }
+            core.setOutput('number', pullRequests[0].number.toString());
+
       - uses: actions-cool/maintain-one-comment@4b2dbf086015f892dcb5e8c1106f5fccd6c1476b # v3.2.0
         with:
+          number: ${{ steps.pr.outputs.number }}
           body: |
             :wave: Hello! Thanks for contributing to our project.
-            Acceptance tests will take some time (aprox. 1h), please be patient :coffee:
+            Acceptance tests will take some time (approx. 1h), please be patient :coffee:
 
-            You can see the progress at the end of this page and at https://github.com/uyuni-project/uyuni/pull/${{ github.event.pull_request.number  }}/checks
+            You can see the progress at the end of this page and at https://github.com/uyuni-project/uyuni/pull/${{ steps.pr.outputs.number }}/checks
             Once tests finish, if they fail, you can check :eyes: the cucumber report. See the link at the output of the action.
-            You can also check the artifacts section, which contains the logs at https://github.com/uyuni-project/uyuni/pull/${{ github.event.pull_request.number }}/checks.
+            You can also check the artifacts section, which contains the logs at https://github.com/uyuni-project/uyuni/pull/${{ steps.pr.outputs.number }}/checks.
             
             If you are unsure the failing tests are related to your code, you can check the "reference jobs". These are jobs that run on a scheduled time with code from master. If they fail for the same reason as your build, it means the tests or the infrastructure are broken. If they do not fail, but yours do, it means it is related to your code.
             
